@@ -98,7 +98,7 @@ ASP.NET_SessionId=xxxx; .AspNet.Cookies=yyyy; area=dbD
 例如：
 
 ```python
-STUDY_URL = "https://welearn.sflep.com/student/StudyCourse.aspx?cid=584&classid=730891&sco=m-2-4-2"
+STUDY_URL = "https://welearn.sflep.com/student/StudyCourse.aspx?cid=584&classid=730891&sco=m-2-4-9"
 ```
 
 如果你想切换到其他题目页面，只需要修改这一行里的 URL。

@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QTextEdit, QFileDialog, QMessageBox,
-    QTabWidget, QGroupBox, QFormLayout
+    QTabWidget, QGroupBox, QFormLayout, QListWidget, QListWidgetItem
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
@@ -99,10 +99,20 @@ class WorkerThread(QThread):
 
         soup = BeautifulSoup(iframe_html, "lxml")
         results = []
+        pure_answers = []
         
-        # Filling
+        # Filling and cfilling
         for node in soup.select("input[data-solution]"):
-            results.append(f"[填空位] {node.get('data-solution')}")
+            solution = node.get('data-solution')
+            filling_parent = node.find_parent(attrs={"data-controltype": "filling"})
+            cfilling_parent = node.find_parent(attrs={"data-controltype": "cfilling"})
+            
+            if filling_parent or cfilling_parent:
+                pure_answers.append(solution)
+                ctype_name = "完形填空" if cfilling_parent else "填空位"
+                results.append(f"[{ctype_name}] {solution}")
+            else:
+                results.append(f"[未知填空] {solution}")
         
         # Choice
         for choice in soup.select('div[data-controltype="choice"]'):
@@ -111,7 +121,9 @@ class WorkerThread(QThread):
                 results.append(f"[选择项] {' / '.join(sols)}")
 
         output = f"用户ID: {userid}\n课程ID: {courseid}\nSCO ID: {scoid}\n\n提取到以下答案:\n" + "\n".join(results)
-        self.finished.emit(output)
+        
+        sep = "====PURE_ANSWERS_SEP===="
+        self.finished.emit(output + sep + "\n".join(pure_answers))
 
     def report_logic(self, session):
         resp = session.get(self.url, timeout=20)
@@ -254,7 +266,7 @@ class MainWindow(QMainWindow):
         url_label = QLabel("学习页面 URL:")
         url_label.setStyleSheet("font-weight: bold;")
         url_layout.addWidget(url_label)
-        self.url_input = QLineEdit("https://welearn.sflep.com/student/StudyCourse.aspx?cid=584&classid=730891&sco=m-2-4-2")
+        self.url_input = QLineEdit("https://welearn.sflep.com/student/StudyCourse.aspx?cid=584&classid=730891&sco=m-2-4-9")
         self.url_input.textChanged.connect(self.on_url_changed)
         url_layout.addWidget(self.url_input)
         
@@ -296,6 +308,29 @@ class MainWindow(QMainWindow):
         self.extract_output.setReadOnly(True)
         self.extract_output.setStyleSheet("font-family: 'Consolas', monospace; font-size: 14px; background-color: #fafbfc; border-radius: 8px; padding: 10px;")
         extract_layout.addWidget(self.extract_output)
+        
+        # Pure answers copy section
+        self.pure_ans_group = QGroupBox("📋 独立填空答案 (直接点击单行内容即可复制)")
+        pure_ans_layout = QVBoxLayout()
+        self.pure_ans_list = QListWidget()
+        self.pure_ans_list.setMaximumHeight(150)
+        self.pure_ans_list.setStyleSheet("""
+            QListWidget { font-size: 15px; border: 1px solid #dcdde1; border-radius: 6px; padding: 5px; }
+            QListWidget::item { padding: 6px; border-bottom: 1px solid #f0f2f5; }
+            QListWidget::item:hover { background-color: #f7f9fa; cursor: pointer; }
+            QListWidget::item:selected { background-color: #e8f4fd; color: #2980b9; font-weight: bold; }
+        """)
+        self.pure_ans_list.itemClicked.connect(self.copy_single_item)
+        
+        self.copy_btn = QPushButton("📋 复制全部答案")
+        self.copy_btn.clicked.connect(self.copy_pure_answers)
+        
+        pure_ans_layout.addWidget(self.pure_ans_list)
+        pure_ans_layout.addWidget(self.copy_btn)
+        self.pure_ans_group.setLayout(pure_ans_layout)
+        self.pure_ans_group.hide() # Initially hidden
+        extract_layout.addWidget(self.pure_ans_group)
+        
         self.tabs.addTab(extract_tab, "🔍 答案解析")
 
         # Tab 2: Connectivity Report
@@ -354,12 +389,36 @@ class MainWindow(QMainWindow):
         self.worker.start()
 
     def on_finished(self, text, btn, widget):
-        widget.setText(text)
+        if "====PURE_ANSWERS_SEP====" in text:
+            main_text, pure_text = text.split("====PURE_ANSWERS_SEP====")
+            widget.setText(main_text)
+            if pure_text.strip():
+                self.pure_ans_list.clear() # clear existing items
+                for i, ans in enumerate(pure_text.strip().split('\n')):
+                    if ans.strip():
+                        self.pure_ans_list.addItem(f"{i+1}. {ans.strip()}")
+                self.pure_ans_group.show()
+            else:
+                self.pure_ans_group.hide()
+        else:
+            widget.setText(text)
+            
         btn.setEnabled(True)
         if hasattr(self, 'refresh_btn'):
             self.refresh_btn.setEnabled(True) # Ensure both are re-enabled
         if hasattr(self, 'report_btn'):
             self.report_btn.setEnabled(True)
+
+    def copy_single_item(self, item):
+        # 取出 "1. answer" 中的答案部分
+        text_to_copy = item.text().split(". ", 1)[-1]
+        QApplication.clipboard().setText(text_to_copy)
+        self.statusBar().showMessage(f"成功复制第 {item.text().split('.')[0]} 题答案: {text_to_copy}", 3000)
+
+    def copy_pure_answers(self):
+        answers = [self.pure_ans_list.item(i).text().split(". ", 1)[-1] for i in range(self.pure_ans_list.count())]
+        QApplication.clipboard().setText("\n".join(answers))
+        QMessageBox.information(self, "成功", "所有填空答案已复制到剪贴板！")
 
     def on_error(self, err, btn, widget):
         widget.setText(f"发生错误:\n{err}")

@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 
 #使用时建议使用chrome，需要自己按F12爬取cookies获得自己的登录信息。如果允许建议使用别人的，否则爬取答案可能被监测导致网站刷新（暂无影响）
-STUDY_URL = "https://welearn.sflep.com/student/StudyCourse.aspx?cid=584&classid=730891&sco=m-2-4-2"
+STUDY_URL = "https://welearn.sflep.com/student/StudyCourse.aspx?cid=584&classid=730891&sco=m-2-4-9"
 #在这里输入你要抓取的网页，注意不要用网页版右侧那个箭头，每次进入新课程要退出重进，保证网址最后几位数字不一样。
 #比如我从2-4-1进入课程读文章，那么按箭头next跳转后浏览器复制的网址还是2-4-1，退出重进可以解决。
 DEFAULT_HEADERS = {
@@ -156,18 +156,24 @@ def extract_answers(html: str):
     soup = BeautifulSoup(html, "lxml")
     grouped_answers = {
         "filling": [],
+        "cfilling": [],
         "choice": [],
     }
 
     for node in soup.select("input[data-solution]"):
-        parent = node.find_parent(attrs={"data-controltype": "filling"})
-        grouped_answers["filling"].append(
-            {
-                "data_id": parent.get("data-id") if parent else None,
-                "index": node.get("data-index"),
-                "solutions": [node.get("data-solution")],
-            }
-        )
+        parent_filling = node.find_parent(attrs={"data-controltype": "filling"})
+        parent_cfilling = node.find_parent(attrs={"data-controltype": "cfilling"})
+        
+        parent = parent_filling or parent_cfilling
+        if parent:
+            ctype = parent.get("data-controltype")
+            grouped_answers[ctype].append(
+                {
+                    "data_id": parent.get("data-id") if parent else None,
+                    "index": node.get("data-index"),
+                    "solutions": [node.get("data-solution")],
+                }
+            )
 
     for choice in soup.select('div[data-controltype="choice"]'):
         solutions = []
