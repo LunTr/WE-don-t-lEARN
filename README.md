@@ -75,7 +75,7 @@ name1=value1; name2=value2; name3=value3
 ```text
 ASP.NET_SessionId=xxxx; .AspNet.Cookies=yyyy; area=dbD
 ```
-## 这里不会的话可以请教GitHub copilot
+## 这里不会的话可以请教AI
 注意：
 
 - 文件名必须是 `CookieValue.txt`
