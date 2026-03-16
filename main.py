@@ -48,7 +48,7 @@ def load_cookies_from_file(path: str = "CookieValue.txt") -> Optional[Dict[str, 
     if not cookie_path.exists():
         return None
 
-    cookie_header = cookie_path.read_text(encoding="utf-8").strip()
+    cookie_header = cookie_path.read_text(encoding="utf-8-sig").strip()
     if not cookie_header:
         return None
 
