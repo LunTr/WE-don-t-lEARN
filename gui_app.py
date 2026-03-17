@@ -141,108 +141,130 @@ class WorkerThread(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("WE don't lEARN GUI - 智慧树/WElearn 增强版")
-        self.resize(950, 750)
+        self.setWindowTitle("WE don't lEARN - 增强版")
+        self.resize(850, 700)
         self.setStyleSheet("""
             * {
                 font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-                font-size: 14px;
-                color: #2c3e50;
+                font-size: 15px;
+                color: #1a1a1a;
             }
             QMainWindow {
-                background-color: #f0f2f5;
+                background-color: #f2efe9;
             }
             QGroupBox {
-                font-size: 15px;
-                font-weight: bold;
-                border: 1px solid #dcdde1;
-                border-radius: 8px;
-                background-color: #ffffff;
-                margin-top: 15px;
+                font-size: 16px;
+                font-weight: 700;
+                border: 1px solid #e6e2d6;
+                border-radius: 16px;
+                margin-top: 20px;
+                background-color: #fcfcfb;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
                 subcontrol-position: top left;
-                padding: 0 8px;
-                color: #34495e;
+                left: 16px;
+                padding: 0 4px;
+                color: #2b2b2b;
             }
             QPushButton {
-                background-color: #3498db;
-                color: white;
+                background-color: #e5e0d3;
+                color: #1a1a1a;
                 border: none;
-                border-radius: 6px;
-                padding: 8px 16px;
-                font-weight: bold;
+                border-radius: 18px;
+                padding: 10px 20px;
+                font-weight: 500;
             }
             QPushButton:hover {
-                background-color: #2980b9;
+                background-color: #d8d3c5;
             }
             QPushButton:pressed {
-                background-color: #1c598a;
+                background-color: #cdcdbd;
             }
             QPushButton:disabled {
-                background-color: #bdc3c7;
-                color: #ecf0f1;
+                background-color: #d1cbbd;
+                color: #9c9586;
+            }
+            QPushButton#PrimaryBtn {
+                background-color: #5d4fcf;
+                color: white;
+            }
+            QPushButton#PrimaryBtn:hover {
+                background-color: #4b3eab;
+            }
+            QPushButton#PrimaryBtn:pressed {
+                background-color: #3e338c;
             }
             QPushButton#SaveBtn {
-                background-color: #2ecc71;
-            }
-            QPushButton#SaveBtn:hover {
-                background-color: #27ae60;
+                background-color: #e5e0d3;
             }
             QLineEdit, QTextEdit {
-                border: 1px solid #dcdde1;
-                border-radius: 6px;
-                padding: 8px;
+                border: 1px solid #dfdad0;
+                border-radius: 18px;
+                padding: 12px;
                 background-color: #ffffff;
-                selection-background-color: #3498db;
-                color: #2c3e50;
+                selection-background-color: #d4d0f5;
+                color: #1a1a1a;
             }
             QLineEdit:focus, QTextEdit:focus {
-                border: 1px solid #3498db;
+                border: 1px solid #5d4fcf;
             }
             QTabWidget::pane {
-                border: 1px solid #dcdde1;
-                border-radius: 8px;
-                background: #ffffff;
+                border: none;
+                background: transparent;
                 top: -1px;
             }
             QTabBar::tab {
-                background: #ecf0f1;
-                border: 1px solid #dcdde1;
-                border-bottom-color: #dcdde1;
-                border-top-left-radius: 6px;
-                border-top-right-radius: 6px;
-                padding: 8px 18px;
+                background: transparent;
+                border: none;
+                padding: 8px 20px;
                 margin-right: 4px;
-                color: #7f8c8d;
-                font-weight: bold;
+                color: #7a756b;
+                font-weight: 600;
+                border-radius: 18px;
             }
             QTabBar::tab:selected {
-                background: #ffffff;
-                border-bottom-color: #ffffff;
-                color: #3498db;
+                background: #e5e0d3;
+                color: #1a1a1a;
             }
             QTabBar::tab:hover:!selected {
-                background: #dcdde1;
+                background: #f2efe9;
             }
-            /* Scrollbar Style */
             QScrollBar:vertical {
                 border: none;
-                background: #f0f2f5;
-                width: 10px;
-                border-radius: 5px;
+                background: transparent;
+                width: 8px;
+                border-radius: 4px;
             }
             QScrollBar::handle:vertical {
-                background: #bdc3c7;
+                background: #d4cfc1;
                 min-height: 20px;
-                border-radius: 5px;
+                border-radius: 4px;
             }
             QScrollBar::handle:vertical:hover {
-                background: #95a5a6;
+                background: #b8b3a5;
             }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
                 height: 0px;
+            }
+            QListWidget {
+                border: none;
+                background-color: transparent;
+            }
+            QListWidget::item {
+                padding: 14px 18px;
+                margin-bottom: 10px;
+                background-color: #e5e0d3;
+                border-radius: 18px;
+                color: #1a1a1a;
+            }
+            QListWidget::item:hover {
+                background-color: #d8d3c5;
+                cursor: pointer;
+            }
+            QListWidget::item:selected {
+                background-color: #c9c3b3;
+                color: #1a1a1a;
             }
         """)
         self.init_ui()
@@ -252,41 +274,41 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
-        layout.setSpacing(15)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(16)
+        layout.setContentsMargins(24, 24, 24, 24)
 
         # Config Area
-        config_group = QGroupBox("✨ 核心配置")
+        config_group = QGroupBox("⚙️ 核心配置")
         config_layout = QVBoxLayout()
-        config_layout.setContentsMargins(15, 20, 15, 15)
-        config_layout.setSpacing(12)
+        config_layout.setContentsMargins(20, 32, 20, 20)
+        config_layout.setSpacing(16)
         
         # URL Line
         url_layout = QHBoxLayout()
         url_label = QLabel("学习页面 URL:")
-        url_label.setStyleSheet("font-weight: bold;")
+        url_label.setStyleSheet("font-weight: 600;")
         url_layout.addWidget(url_label)
         self.url_input = QLineEdit("https://welearn.sflep.com/student/StudyCourse.aspx?cid=584&classid=730891&sco=m-2-4-9")
-        self.url_input.textChanged.connect(self.on_url_changed)
         url_layout.addWidget(self.url_input)
         
-        self.refresh_btn = QPushButton("🔄 刷新提取")
-        self.refresh_btn.setFixedWidth(120)
+        self.refresh_btn = QPushButton("🚀 开始提取")
+        self.refresh_btn.setObjectName("PrimaryBtn")
+        self.refresh_btn.setFixedWidth(130)
         self.refresh_btn.clicked.connect(lambda: self.run_task("extract"))
         url_layout.addWidget(self.refresh_btn)
         config_layout.addLayout(url_layout)
 
         # Cookie Line
-        cookie_label = QLabel("Cookie 字符串 (从浏览器 F12 获取):")
-        cookie_label.setStyleSheet("font-weight: bold;")
+        cookie_label = QLabel("Cookie (从浏览器 F12 获取):")
+        cookie_label.setStyleSheet("font-weight: 600;")
         config_layout.addWidget(cookie_label)
         self.cookie_input = QTextEdit()
         self.cookie_input.setMaximumHeight(80)
-        self.cookie_input.setPlaceholderText("在此粘贴您的 Cookies (建议不要包含敏感的密码字段)...")
+        self.cookie_input.setPlaceholderText("在此粘贴您的 Cookies...")
         config_layout.addWidget(self.cookie_input)
         
         btn_layout = QHBoxLayout()
-        self.save_cookie_btn = QPushButton("💾 保存到本地 (CookieValue.txt)")
+        self.save_cookie_btn = QPushButton("💾 保存到本地")
         self.save_cookie_btn.setObjectName("SaveBtn")
         self.save_cookie_btn.clicked.connect(self.save_cookie)
         btn_layout.addStretch()
@@ -303,46 +325,58 @@ class MainWindow(QMainWindow):
         # Tab 1: Answer Extraction
         extract_tab = QWidget()
         extract_layout = QVBoxLayout(extract_tab)
-        extract_layout.setContentsMargins(15, 15, 15, 15)
+        extract_layout.setContentsMargins(5, 10, 5, 5)
+        extract_layout.setSpacing(15)
+        
         self.extract_output = QTextEdit()
         self.extract_output.setReadOnly(True)
-        self.extract_output.setStyleSheet("font-family: 'Consolas', monospace; font-size: 14px; background-color: #fafbfc; border-radius: 8px; padding: 10px;")
-        extract_layout.addWidget(self.extract_output)
+        self.extract_output.setStyleSheet("""
+            QTextEdit {
+                font-family: 'Consolas', monospace; 
+                font-size: 14px;
+                background-color: #fcfcfb;
+                border: 1px solid #e6e2d6;
+                border-radius: 16px;
+                padding: 16px;
+            }
+        """)
+        extract_layout.addWidget(self.extract_output, stretch=1)
         
         # Pure answers copy section
-        self.pure_ans_group = QGroupBox("📋 独立填空答案 (直接点击单行内容即可复制)")
+        self.pure_ans_group = QGroupBox("📋 独立填空答案 (点击即可复制)")
         pure_ans_layout = QVBoxLayout()
+        pure_ans_layout.setContentsMargins(12, 24, 12, 12)
         self.pure_ans_list = QListWidget()
-        self.pure_ans_list.setMaximumHeight(150)
-        self.pure_ans_list.setStyleSheet("""
-            QListWidget { font-size: 15px; border: 1px solid #dcdde1; border-radius: 6px; padding: 5px; }
-            QListWidget::item { padding: 6px; border-bottom: 1px solid #f0f2f5; }
-            QListWidget::item:hover { background-color: #f7f9fa; cursor: pointer; }
-            QListWidget::item:selected { background-color: #e8f4fd; color: #2980b9; font-weight: bold; }
-        """)
+        self.pure_ans_list.setStyleSheet("font-size: 15px;")
+        self.pure_ans_list.setVerticalScrollMode(QListWidget.ScrollMode.ScrollPerPixel)
         self.pure_ans_list.itemClicked.connect(self.copy_single_item)
         
-        self.copy_btn = QPushButton("📋 复制全部答案")
-        self.copy_btn.clicked.connect(self.copy_pure_answers)
-        
         pure_ans_layout.addWidget(self.pure_ans_list)
-        pure_ans_layout.addWidget(self.copy_btn)
         self.pure_ans_group.setLayout(pure_ans_layout)
         self.pure_ans_group.hide() # Initially hidden
-        extract_layout.addWidget(self.pure_ans_group)
+        extract_layout.addWidget(self.pure_ans_group, stretch=2)
         
         self.tabs.addTab(extract_tab, "🔍 答案解析")
 
         # Tab 2: Connectivity Report
         report_tab = QWidget()
         report_layout = QVBoxLayout(report_tab)
-        report_layout.setContentsMargins(15, 15, 15, 15)
+        report_layout.setContentsMargins(5, 10, 5, 5)
         self.report_btn = QPushButton("📡 检查当前页面的网络连通性")
-        self.report_btn.setStyleSheet("margin-bottom: 10px;")
+        self.report_btn.setStyleSheet("margin-bottom: 12px; font-weight: bold;")
         self.report_btn.clicked.connect(lambda: self.run_task("report"))
         self.report_output = QTextEdit()
         self.report_output.setReadOnly(True)
-        self.report_output.setStyleSheet("font-family: 'Consolas', monospace; font-size: 14px; background-color: #fafbfc; border-radius: 8px; padding: 10px;")
+        self.report_output.setStyleSheet("""
+            QTextEdit {
+                font-family: 'Consolas', monospace; 
+                font-size: 14px;
+                background-color: #fcfcfb;
+                border: 1px solid #e6e2d6;
+                border-radius: 16px;
+                padding: 16px;
+            }
+        """)
         report_layout.addWidget(self.report_btn)
         report_layout.addWidget(self.report_output)
         self.tabs.addTab(report_tab, "📊 运行报告")
@@ -414,11 +448,6 @@ class MainWindow(QMainWindow):
         text_to_copy = item.text().split(". ", 1)[-1]
         QApplication.clipboard().setText(text_to_copy)
         self.statusBar().showMessage(f"成功复制第 {item.text().split('.')[0]} 题答案: {text_to_copy}", 3000)
-
-    def copy_pure_answers(self):
-        answers = [self.pure_ans_list.item(i).text().split(". ", 1)[-1] for i in range(self.pure_ans_list.count())]
-        QApplication.clipboard().setText("\n".join(answers))
-        QMessageBox.information(self, "成功", "所有填空答案已复制到剪贴板！")
 
     def on_error(self, err, btn, widget):
         widget.setText(f"发生错误:\n{err}")
