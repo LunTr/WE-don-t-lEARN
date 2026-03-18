@@ -1,277 +1,62 @@
-# WE don't lEARN
-
-一个用于分析并提取 WE Learn 课程页面答案的 Python 脚本仓库。
-
-当前仓库包含两个主要脚本：
-
-- [main.py](main.py)：主脚本。自动走课程页 -> AJAX `scoAddr` -> iframe 内容页的链路，并提取当前已支持题型的答案。
-- [report.py](report.py)：诊断脚本。用于排查某个 `sco` 页面为什么提取不到答案，查看真实 iframe 页面和调试链路。
-
-## 当前支持的题型
-
-`main.py` 当前支持以下两类题型：
-
-- `filling`：填空题，答案通常位于 `input[data-solution]`
-- `choice`：选择题，答案通常位于 `div[data-controltype="choice"]` 内的 `li[data-solution]`
-
-如果遇到新的题型，可以先用 [report.py](report.py) 诊断页面结构，再补充到 [main.py](main.py) 的提取逻辑中。
-
-## 运行前提
-
-请只在你**已登录且有权限访问**的课程页面上使用本仓库。
-
-由于目标站点需要登录态，运行前必须准备好有效的 Cookie。
-
-## 环境要求
-
-建议环境：
-## 注意安装依赖！
-- Windows + Python 3
-- 已安装以下依赖：
-  - `requests`
-  - `beautifulsoup4`
-  - `lxml`
-
-## 安装依赖
-
-在仓库目录下执行：
-
-```bash
-py -3 -m pip install requests beautifulsoup4 lxml
-```
-
-如果你的环境里没有 `py` 启动器，也可以使用：
-
-```bash
-python -m pip install requests beautifulsoup4 lxml
-```
-
-## 准备 Cookie
-
-### 1. 在浏览器中登录 WE Learn
-先在浏览器中正常登录目标站点。
-
-### 2. 打开开发者工具，找到目标课程请求
-在浏览器开发者工具中，找到类似下面的页面请求：
-
-```text
-https://welearn.sflep.com/student/StudyCourse.aspx?cid=...&classid=...&sco=...
-```
-
-### 3. 复制请求头中的 `Cookie`
-把完整的 Cookie 请求头值复制出来，格式通常类似：
-
-```text
-name1=value1; name2=value2; name3=value3
-```
-
-### 4. 在仓库根目录新建 `CookieValue.txt`
-在仓库根目录创建一个文件：
-
-- `CookieValue.txt`
-
-把刚才复制出的**整行 Cookie 值**粘贴进去。文件内容应当只有一行，例如：
-
-```text
-ASP.NET_SessionId=xxxx; .AspNet.Cookies=yyyy; area=dbD
-```
-## 这里不会的话可以请教AI
-注意：
-
-- 文件名必须是 `CookieValue.txt`
-- 文件内容是**纯 Cookie 字符串**，不要带 `Cookie:` 前缀
-- 不要把个人 Cookie 上传到公开仓库
-
-当前代码读取 Cookie 的位置：
-
-- [main.py:44-53](main.py#L44-L53)
-- [main.py:198](main.py#L198)
-- [report.py:61-70](report.py#L61-L70)
-- [report.py:286](report.py#L286)
-
-## 修改目标课程页面
-
-主脚本默认读取 [main.py](main.py) 顶部的 `STUDY_URL`：
-
-- [main.py:10](main.py#L10)
-
-例如：
-
-```python
-STUDY_URL = "https://welearn.sflep.com/student/StudyCourse.aspx?cid=584&classid=730891&sco=m-2-4-9"
-```
-
-如果你想切换到其他题目页面，只需要修改这一行里的 URL。
-
-其中最常改的是查询参数中的：
-
-- `cid`
-- `classid`
-- `sco`
-
-## 运行主脚本
-
-在仓库目录下执行：
-
-```bash
-py -3 main.py
-```
-
-或：
-
-```bash
-python main.py
-```
-
-程序会自动执行以下流程：
-
-1. 读取 `CookieValue.txt`
-2. 请求 `StudyCourse.aspx`
-3. 从主页面提取：
-   - `userid`
-   - `courseid`
-   - `scoid`
-   - AJAX 地址
-4. 请求 `Ajax/SCO.aspx?action=scoAddr...`
-5. 解析真实 iframe 内容页地址
-6. 请求 iframe 页面
-7. 提取当前已支持题型的答案
-
-### 主脚本输出示例
-
-```text
-main page:  https://welearn.sflep.com/student/StudyCourse.aspx?cid=...
-ajax url:   https://welearn.sflep.com/Ajax/SCO.aspx?uid=...
-iframe url: https://centercourseware.sflep.com/...
-found 4 answer item(s)
-
-[choice]
-01. data-id=u3_19_1 index=1 solution=disabled
-02. data-id=u3_19_2 index=2 solution=disabled / impaired
-```
-
-输出说明：
-
-- 会先显示主页面、AJAX 地址和 iframe 地址
-- 然后按题型分组输出
-- 目前会输出 `[filling]` 或 `[choice]`
-
-## 使用诊断脚本
-
-如果某个页面运行 [main.py](main.py) 后：
-
-- 提取结果为空
-- 页面结构和已支持题型不一致
-- 你怀疑真实内容不在主 HTML 中
-
-可以使用 [report.py](report.py) 进行诊断。
-
-### 修改诊断目标 URL
-在 [report.py:285](report.py#L285) 修改目标 URL，例如：
-
-```python
-url = "https://welearn.sflep.com/student/StudyCourse.aspx?cid=584&classid=730891&sco=m-2-3-19"
-```
-
-### 运行诊断脚本
-
-```bash
-py -3 report.py
-```
-
-或：
-
-```bash
-python report.py
-```
-
-### 诊断脚本会输出什么
-
-`report.py` 会输出：
-
-- 主页面抓取结果
-- `userid / courseid / scoid / ajaxUrl`
-- `scoAddr` 返回值
-- iframe 真实页面地址
-- 是否在 iframe 内容页中发现 `data-solution`
-
-同时还会生成这些调试文件：
-
-- `debug_response.html`：主页面 HTML
-- `debug_sco_addr.json`：`scoAddr` 接口返回内容
-- `debug_iframe.html`：iframe 真实内容页 HTML
-
-这些文件适合在无法提取答案时手动分析结构。
-
-## 常见问题
-
-### 1. 运行后提示找不到答案
-先检查：
-
-- `CookieValue.txt` 是否存在
-- Cookie 是否过期
-- `STUDY_URL` 是否是你当前能访问的课程页面
-- 当前题型是否属于已支持的 `filling` / `choice`
-
-如果以上都正常但仍提取失败，请先运行 [report.py](report.py)。
-
-### 2. 只有主页面，没有真实题目内容
-这是正常现象。
-
-WE Learn 的课程内容通常不是直接写在主页面里，而是通过：
-
-- `StudyCourse.aspx`
-- `Ajax/SCO.aspx`
-- iframe 内容页
-
-这一整条链路动态加载。
-
-所以不能只请求主页面，还需要继续请求 `scoAddr` 返回的真实 iframe 页面。
-
-### 3. `cookie.txt` 还用吗？
-当前代码**不直接使用** `cookie.txt`。
-
-当前实际使用的是：
-
-- `CookieValue.txt`
-
-其中：
-
-- `cookie.txt`：更像原始抓包记录，供人工参考
-- `CookieValue.txt`：程序实际读取的纯 Cookie 字符串文件
-
-## 文件说明
-
-- [main.py](main.py)：主提取脚本
-- [report.py](report.py)：诊断脚本
-- `CookieValue.txt`：运行时需要的 Cookie 文件，不建议上传
-- `debug_response.html`：诊断生成的主页面 HTML
-- `debug_sco_addr.json`：诊断生成的 AJAX 返回值
-- `debug_iframe.html`：诊断生成的 iframe 页面 HTML
-
-## 上传仓库前建议
-
-如果你准备把仓库上传到公开平台，建议先删除或不要提交以下内容：
-
-- `CookieValue.txt`
-- 任何包含个人 Cookie、账号、姓名、用户编号的信息文件
-- 运行中生成的调试文件（如果其中包含敏感内容）
-
-建议至少把这些文件加入 `.gitignore`：
-
-```gitignore
-CookieValue.txt
-debug_response.html
-debug_sco_addr.json
-debug_iframe.html
-```
-
-## 后续扩展
-
-如果后续遇到新的题型，可以继续扩展 [main.py:153-195](main.py#L153-L195) 中的提取逻辑。
-
-目前推荐流程是：
-
-1. 先在 [main.py](main.py) 中直接运行已有逻辑
-2. 如果提取失败，使用 [report.py](report.py) 找出真实 iframe 页面结构
-3. 根据新题型补充提取规则
+﻿# WE don't lEARN - WE Learn 课程答案提取工具
+
+一款带图形化操作界面（GUI）的网页端 WE Learn 课程答案全自动提取工具。告别繁琐的终端命令，轻松一点即可提取题目答案！
+
+## 运行环境与依赖要求
+
+本程序基于 Python 开发，运行前需要确保你的电脑上已经安装好相应环境：
+
+- **系统前提**：已安装 Python 3 环境
+- **依赖库**：requests, beautifulsoup4, lxml, PyQt6
+如果直接使用打包好的exe文件的话应该没有这种问题。
+**一键安装依赖命令**：
+打开终端（按 Win+R 输入 cmd 或打开 PowerShell），进入当前文件夹，执行以下命令安装必备依赖：
+pip install requests beautifulsoup4 lxml PyQt6
+
+## 如何使用（GUI 操作指南）
+
+本工具的主界面十分简洁，只需四步即可傻瓜式提取课程答案：
+
+### 第一步：启动软件
+在项目根目录下，打开命令提示符或终端，运行以下命令启动图形化客户端：
+python gui_app.py
+程序启动后，你会看到一个包含URL、Cookie输入框以及相关按钮的窗口。
+
+### 第二步：获取并填写登入凭证 (Cookie)
+必须让程序伪装成你登入以获取题目：
+1. 在浏览器中打开并正常登录 WE Learn 学习页。
+2. 按下 F12 (或右键点击页面选择检查)，打开浏览器的**开发者工具**。
+3. 在顶部选项卡中切换到 **网络（Network）** 面板。
+4. 刷新网页，在抓到的请求列表中找到主请求（通常名称里带有 StudyCourse.aspx），点击该请求。
+5. 在弹出的详细信息里，找到 **请求标头（Request Headers）** 部分，往下找名为 Cookie 的字段。
+6. 将它后面一长串以分号隔开的值全部复制。
+7. **回到本软件，将其粘贴到界面的 "Cookie" 输入框内**。
+##此处给出一个chrome的演示：
+进入课程后按下F12，等待几秒会出现开发者界面。切换到Network。
+![alt text](image.png)
+按下刷新键，滚动到最上面有着一个叫StudyCourse.apsx?后面一串的内容。
+![alt text](image-1.png)
+单击点开，翻到cookie，把整个cookie复制下来。
+![alt text](image-2.png)
+如果你运行GUI或者直接使用exe，那么把这个cookie粘贴到对应位置即可继续。
+如果你运行main，需要新建一个名为CookieValue.txt的txt文件，然后main会识别。
+### 第三步：填写课程页面 URL
+在浏览器顶部的地址栏，直接复制你当前正在做的课程/练习的具体网址（含有 cid=... 和 sco=... 的链接）。
+**将它粘贴到提取工具界面的 "URL" 输入框中**。
+
+### 第四步：一键提取答案
+确认 URL 和 Cookie 都已填写无误后，点击界面上的提取按钮开始执行！
+静待几秒钟，程序会自动请求真实题目页面并解析，成功后在软件界面下方会直接为你展示所有支持题型的正确解答！
+
+---
+
+## 诊断排查功能
+
+有时候网页上可能会推出全新的未知题型，导致软件无法马上识别出答案，或者返回异常结果。
+这时候，可以在软件上点击 **诊断 (Report)** 相关按钮。程序会自动保存网页中间跳转页和真实的网页结构，方便反馈或者供后期补充提取规则代码使用。
+
+##  注意事项
+
+1. **时效问题**：Cookie 代表了你的登录状态，会有时效性。如果发现突然报错提取失败，请返回浏览器刷新页面并重新复制一份新的 Cookie 粘贴。
+2. **隐私安全**：Cookie 包含了你的所有私密身份凭证！**请不要将其发给任何人，也不要截图上传到公共平台。**
+3. 本项目仅供前端页面结构分析与相关技术交流学习。
